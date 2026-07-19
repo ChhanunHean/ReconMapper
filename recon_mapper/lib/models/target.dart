@@ -27,10 +27,10 @@ class Target {
       id: json["id"], 
       domain: json["domain"],
       ip: json["ip"],
-      ping: json["ping"],
-      riskScore: json["riskScore"],
-      riskLevel: json["riskLevel"],
-      lastScanned: json["lastScanned"]
+      ping: (json['ping_ms'] as num?)?.toDouble(),
+      riskScore: json["risk_score"],
+      riskLevel: json["risk_level"],
+      lastScanned: json["last_scanned"]
     );
   }
 }
