@@ -3,7 +3,7 @@ import 'theme/app_theme.dart';
 import 'models/target.dart';
 
 void main() {
-  // TEMPORARY TEST — remove this block once confirmed working
+  // TEMPORARY TEST
   final testJson = {
     "id": 1,
     "domain": "google.com",
