@@ -4,7 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../services/api_service.dart';
 import '../../models/scan_result.dart';
 import '../../widgets/loading_spinner.dart';
-
+  
 class TargetDetailScreen extends StatefulWidget {
   final int targetId;
 
