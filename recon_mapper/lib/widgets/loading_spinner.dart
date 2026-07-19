@@ -1,8 +1,7 @@
-// widgets/loading_spinner.dart
-//
-// Small reusable loading indicator. Used on add_target_screen.dart
-// (while scanning) and target_detail_screen.dart (while loading export
-// data). Optional message shown under the spinner.
+//----------------------------------------------------------------------------------
+//             Small reusable loading indicator. Used on add_target_screen.dart
+//        (while scanning) and target_detail_screen.dart (while loading export data).
+//----------------------------------------------------------------------------------
 
 import 'package:flutter/material.dart';
 

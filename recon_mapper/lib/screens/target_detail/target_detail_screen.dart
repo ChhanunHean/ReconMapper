@@ -1,11 +1,3 @@
-// screens/target_detail/target_detail_screen.dart
-//
-// Full detail view for one target. Fetches the full scan result via
-// GET /export/{id} and displays IP, ping, ports, SSL, header score,
-// and risk. Fields the backend doesn't collect yet (location, server
-// version, WAF, tech stack) show as "-" placeholders rather than
-// fake data, until those scanners are added.
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
@@ -54,9 +46,10 @@ class _TargetDetailScreenState extends State<TargetDetailScreen> {
       });
     }
   }
-
-  // Converts a 0-100 header score into a letter grade badge, similar
-  // to how tools like securityheaders.com or SSL Labs present scores.
+//----------------------------------------------------------------------------------------
+//               Converts a 0-100 header score into a letter grade badge, similar
+//               to how tools like securityheaders.com or SSL Labs present scores.
+//-----------------------------------------------------------------------------------------
   String gradeLetter(int score) {
     if (score >= 90) return 'A';
     if (score >= 75) return 'B';
@@ -89,9 +82,10 @@ class _TargetDetailScreenState extends State<TargetDetailScreen> {
   Future<void> exportReport() async {
     if (result == null) return;
     final r = result!;
-
-    // Rebuild the same JSON shape the backend's /export/{id} returns,
-    // from the ScanResult we already have loaded - no extra API call needed.
+//---------------------------------------------------------------------------------------
+//            Rebuild the same JSON shape the backend's /export/{id} returns,
+//            from the ScanResult we already have loaded - no extra API call needed.
+//----------------------------------------------------------------------------------------
     final Map<String, dynamic> data = {
       "domain": r.domain,
       "ip": r.ip,
@@ -140,7 +134,6 @@ class _TargetDetailScreenState extends State<TargetDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Domain header with avatar circle
           Row(
             children: [
               CircleAvatar(
@@ -178,12 +171,12 @@ class _TargetDetailScreenState extends State<TargetDetailScreen> {
             valueColor: r.alive ? Colors.green : Colors.red,
           ),
           _detailRow('PING', r.pingMs != null ? '${r.pingMs!.round()}ms' : '-'),
-          _detailRow('LOCATION', '-'), // not collected by backend yet
+          _detailRow('LOCATION', '-'), 
           _detailRow(
             'OPEN PORTS',
             r.openPorts.isEmpty ? 'None found' : r.openPorts.join(', '),
           ),
-          _detailRow('SERVER VERSION', '-'), // not collected by backend yet
+          _detailRow('SERVER VERSION', '-'), 
 
           const SizedBox(height: 12),
           const Text(
@@ -222,8 +215,8 @@ class _TargetDetailScreenState extends State<TargetDetailScreen> {
                 : 'Invalid / Not present',
             valueColor: r.sslValid ? Colors.green : Colors.red,
           ),
-          _detailRow('WAF', '-'), // not collected by backend yet
-          _detailRow('TECH STACK', '-'), // not collected by backend yet
+          _detailRow('WAF', '-'), 
+          _detailRow('TECH STACK', '-'), 
 
           const SizedBox(height: 12),
           _detailRowWidget(

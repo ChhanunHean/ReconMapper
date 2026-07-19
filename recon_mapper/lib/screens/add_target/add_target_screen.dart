@@ -1,9 +1,7 @@
-// screens/add_target/add_target_screen.dart
-//
-// Form screen: user types a domain/IP, taps "Scan", we call the backend
-// via ApiService().scanTarget(), then pop back to the dashboard so it
-// can refresh its list and show the new/updated target.
-
+//-------------------------------------------------------------------------------------
+//             Form screen: user types a domain/IP, taps "Scan", we call the backend
+//                  can refresh its list and show the new/updated target.
+//---------------------------------------------------------------------------------------
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../widgets/loading_spinner.dart';
@@ -47,9 +45,10 @@ class _AddTargetScreenState extends State<AddTargetScreen> {
       await apiService.scanTarget(domain);
 
       if (!mounted) return;
-
-      // Scan succeeded and was saved on the backend - go back to
-      // the dashboard so it can reload its list.
+//------------------------------------------------------------------------------------
+//               Scan succeeded and was saved on the backend - go back to
+//                     the dashboard so it can reload its list.
+//-------------------------------------------------------------------------------------
       Navigator.pop(context, true);
     } catch (e) {
       setState(() {
