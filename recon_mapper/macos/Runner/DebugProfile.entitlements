@@ -8,5 +8,8 @@
 	<true/>
 	<key>com.apple.security.network.server</key>
 	<true/>
+	<!-- Allow outgoing HTTP requests to reach the FastAPI backend on localhost:8000 -->
+	<key>com.apple.security.network.client</key>
+	<true/>
 </dict>
 </plist>
