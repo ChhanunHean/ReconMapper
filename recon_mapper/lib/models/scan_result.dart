@@ -25,6 +25,11 @@ class ScanResult {
   final List<String> headersMissing;
   final int riskScore;
   final String riskLevel;
+  final String? lastScanned;
+  final String? location;
+  final String? server;
+  final String? techStack;
+  final String? waf;
 
   ScanResult({
     required this.domain,
@@ -42,6 +47,11 @@ class ScanResult {
     required this.headersMissing,
     required this.riskScore,
     required this.riskLevel,
+    this.lastScanned,
+    this.location,
+    this.server,
+    this.techStack,
+    this.waf,
   });
 
   factory ScanResult.fromJson(Map<String, dynamic> json) {
@@ -82,6 +92,11 @@ class ScanResult {
       headersMissing: missing,
       riskScore: json['risk_score'],
       riskLevel: json['risk_level'],
+      lastScanned: json['last_scanned'],
+      location: json['location'],
+      server: json['server'],
+      techStack: json['tech_stack'],
+      waf: json['waf'],
     );
   }
 }

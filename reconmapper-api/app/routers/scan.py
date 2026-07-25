@@ -10,6 +10,7 @@ from ..scanners.ping import ping_host
 from ..scanners.port_scan import scan_ports
 from ..scanners.ssl_check import check_ssl
 from ..scanners.header_analysis import analyze_headers
+from ..scanners.location import get_ip_location
 from ..risk_engine import calculate_risk
 from ..models import Target
 from fastapi import HTTPException
@@ -26,6 +27,7 @@ def scan_target(request: ScanRequest, db: Session = Depends(get_db)):
     port_result = scan_ports(dns_result["ip"])
     ssl_result = check_ssl(request.domain)
     header_result = analyze_headers(request.domain)
+    location_result = get_ip_location(dns_result["ip"])
 
     combined = {
         **dns_result,
@@ -33,7 +35,9 @@ def scan_target(request: ScanRequest, db: Session = Depends(get_db)):
         **port_result,
         **ssl_result,
         **header_result,
+        "location": location_result,
     }
+
 
     risk_result = calculate_risk(combined)
     combined.update(risk_result)
@@ -67,4 +71,17 @@ def export_target(target_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Target not found")
 
     data = json.loads(target.full_result) if target.full_result else {}
+    data["last_scanned"] = target.last_scanned.isoformat() if target.last_scanned else None
     return JSONResponse(content=data)
+
+
+@router.delete("/targets/{target_id}")
+def delete_target(target_id: int, db: Session = Depends(get_db)):
+    target = db.query(Target).filter(Target.id == target_id).first()
+    if target is None:
+        raise HTTPException(status_code=404, detail="Target not found")
+    db.delete(target)
+    db.commit()
+    return {"status": "success", "message": f"Target {target_id} deleted"}
+
+

@@ -72,4 +72,14 @@ class ApiService {
       throw Exception("Export failed (status ${response.statusCode})");
     }
   }
+  //-----------------------------------------------------------------
+  // DELETE /targets/{id} -> deletes a target from database
+  //-----------------------------------------------------------------
+  Future<void> deleteTarget(int id) async {
+    final response = await http.delete(Uri.parse("$baseUrl/targets/$id"));
+
+    if (response.statusCode != 200) {
+      throw Exception("Failed to delete target (status ${response.statusCode})");
+    }
+  }
 }

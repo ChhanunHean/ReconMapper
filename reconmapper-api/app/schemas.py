@@ -21,6 +21,11 @@ class ScanResponse(BaseModel):
     headers_missing: list[str]
     risk_score: int
     risk_level: str
+    location: str | None = None
+    server: str | None = None
+    tech_stack: str | None = None
+    waf: str | None = None
+
 
 class TargetOut(BaseModel):
     id: int

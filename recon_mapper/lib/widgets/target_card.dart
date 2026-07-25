@@ -9,14 +9,36 @@ import 'risk_badge.dart';
 
 class TargetCard extends StatelessWidget {
   final Target target;
+  final VoidCallback? onRefresh;
 
-  const TargetCard({super.key, required this.target});
+  const TargetCard({super.key, required this.target, this.onRefresh});
 
-  // Trim the ISO date string to just "YYYY-MM-DD" for display
+
+  // Format the ISO date string to show "YYYY-MM-DD" + local time "HH:MM"
   String _formatDate(String? raw) {
     if (raw == null) return 'Never';
-    return raw.length >= 10 ? raw.substring(0, 10) : raw;
+    try {
+      // If raw string has no 'Z' or timezone offset, append 'Z' to mark it as UTC
+      String cleanRaw = raw.trim();
+      if (!cleanRaw.endsWith('Z') && !cleanRaw.contains('+')) {
+        // Handle database spaces instead of 'T' separator
+        if (cleanRaw.contains(' ') && !cleanRaw.contains('T')) {
+          cleanRaw = cleanRaw.replaceFirst(' ', 'T');
+        }
+        cleanRaw = '${cleanRaw}Z';
+      }
+      final dateTime = DateTime.parse(cleanRaw).toLocal();
+      final year = dateTime.year;
+      final month = dateTime.month.toString().padLeft(2, '0');
+      final day = dateTime.day.toString().padLeft(2, '0');
+      final hour = dateTime.hour.toString().padLeft(2, '0');
+      final minute = dateTime.minute.toString().padLeft(2, '0');
+      return '$year-$month-$day $hour:$minute';
+    } catch (_) {
+      return raw.length >= 16 ? raw.substring(0, 16).replaceAll('T', ' ') : raw;
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -28,15 +50,18 @@ class TargetCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: () {
+        onTap: () async {
           // Only navigate if we actually have an ID saved in the backend
           if (target.id == null) return;
-          Navigator.push(
+          final result = await Navigator.push<bool>(
             context,
             MaterialPageRoute(
               builder: (_) => TargetDetailScreen(targetId: target.id!),
             ),
           );
+          if (result == true && onRefresh != null) {
+            onRefresh!();
+          }
         },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

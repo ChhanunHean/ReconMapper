@@ -102,6 +102,7 @@ class _TargetDetailScreenState extends State<TargetDetailScreen> {
       "headers_missing": r.headersMissing,
       "risk_score": r.riskScore,
       "risk_level": r.riskLevel,
+      "last_scanned": r.lastScanned,
     };
 
     final jsonString = const JsonEncoder.withIndent('  ').convert(data);
@@ -112,11 +113,91 @@ class _TargetDetailScreenState extends State<TargetDetailScreen> {
     );
   }
 
+  String _formatDate(String? raw) {
+    if (raw == null) return 'Never';
+    try {
+      // If raw string has no 'Z' or timezone offset, append 'Z' to mark it as UTC
+      String cleanRaw = raw.trim();
+      if (!cleanRaw.endsWith('Z') && !cleanRaw.contains('+')) {
+        // Handle database spaces instead of 'T' separator
+        if (cleanRaw.contains(' ') && !cleanRaw.contains('T')) {
+          cleanRaw = cleanRaw.replaceFirst(' ', 'T');
+        }
+        cleanRaw = '${cleanRaw}Z';
+      }
+      final dateTime = DateTime.parse(cleanRaw).toLocal();
+      final year = dateTime.year;
+      final month = dateTime.month.toString().padLeft(2, '0');
+      final day = dateTime.day.toString().padLeft(2, '0');
+      final hour = dateTime.hour.toString().padLeft(2, '0');
+      final minute = dateTime.minute.toString().padLeft(2, '0');
+      return '$year-$month-$day $hour:$minute';
+    } catch (_) {
+      return raw.length >= 16 ? raw.substring(0, 16).replaceAll('T', ' ') : raw;
+    }
+  }
+
+  Future<void> _confirmDelete() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Target?'),
+          content: const Text(
+            'Are you sure you want to remove this target from your monitoring list? This will erase all its scan history.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      setState(() {
+        isLoading = true;
+      });
+      try {
+        await apiService.deleteTarget(widget.targetId);
+        if (mounted) {
+          Navigator.pop(context, true); // pop back with true to notify dashboard
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Error: $e")),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(result?.domain ?? 'Target Detail'),
+        actions: [
+          if (result != null)
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.redAccent),
+              tooltip: 'Delete Target',
+              onPressed: _confirmDelete,
+            ),
+        ],
       ),
       body: isLoading
           ? const LoadingSpinner(message: 'Loading target details...')
@@ -153,15 +234,16 @@ class _TargetDetailScreenState extends State<TargetDetailScreen> {
                       r.domain,
                       style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    const Text(
-                      'Last scanned just now',
-                      style: TextStyle(color: Colors.grey, fontSize: 13),
+                    Text(
+                      'Last scanned: ${_formatDate(r.lastScanned)}',
+                      style: const TextStyle(color: Colors.grey, fontSize: 13),
                     ),
                   ],
                 ),
               ),
             ],
           ),
+
           const SizedBox(height: 24),
 
           _detailRow('IP', r.ip ?? '-'),
@@ -171,12 +253,12 @@ class _TargetDetailScreenState extends State<TargetDetailScreen> {
             valueColor: r.alive ? Colors.green : Colors.red,
           ),
           _detailRow('PING', r.pingMs != null ? '${r.pingMs!.round()}ms' : '-'),
-          _detailRow('LOCATION', '-'), 
+          _detailRow('LOCATION', r.location ?? 'Unknown'), 
           _detailRow(
             'OPEN PORTS',
             r.openPorts.isEmpty ? 'None found' : r.openPorts.join(', '),
           ),
-          _detailRow('SERVER VERSION', '-'), 
+          _detailRow('SERVER VERSION', r.server ?? 'Unknown'), 
 
           const SizedBox(height: 12),
           const Text(
@@ -215,8 +297,9 @@ class _TargetDetailScreenState extends State<TargetDetailScreen> {
                 : 'Invalid / Not present',
             valueColor: r.sslValid ? Colors.green : Colors.red,
           ),
-          _detailRow('WAF', '-'), 
-          _detailRow('TECH STACK', '-'), 
+          _detailRow('WAF', r.waf ?? 'None detected'), 
+          _detailRow('TECH STACK', r.techStack ?? 'Unknown'), 
+
 
           const SizedBox(height: 12),
           _detailRowWidget(

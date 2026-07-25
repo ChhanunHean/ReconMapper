@@ -2,6 +2,7 @@
 // Home screen: shows all saved targets fetched from GET /targets.
 // FAB : AddTargetScreen. When it pops with result=true, reload the list.
 //-------------------------------------------------------------------------------------
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../services/api_service.dart';
 import '../../models/target.dart';
@@ -22,34 +23,66 @@ class _DashboardScreenState extends State<DashboardScreen> {
   List<Target> _targets = [];
   bool _isLoading = true;
   String? _errorMessage;
+  Timer? _autoRefreshTimer;
+  int _secondsRemaining = 60;
 
   @override
   void initState() {
     super.initState();
     _loadTargets();
+    _startAutoRefresh();
+  }
+
+  void _startAutoRefresh() {
+    _autoRefreshTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (mounted) {
+        setState(() {
+          if (_secondsRemaining > 1) {
+            _secondsRemaining--;
+          } else {
+            _secondsRemaining = 60;
+            _loadTargets(silent: true);
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _autoRefreshTimer?.cancel();
+    super.dispose();
   }
 
   //----------------------------------------------------------
   // Fetches all targets from the backend and updates state.
   //----------------------------------------------------------
-  Future<void> _loadTargets() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+  Future<void> _loadTargets({bool silent = false}) async {
+    if (!silent) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+        _secondsRemaining = 60;
+      });
+    }
+
 
     try {
       final targets = await _api.getTargets();
-      setState(() {
-        _targets = targets;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _targets = targets;
+          _isLoading = false;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage =
-            'Could not load targets.\nMake sure the backend is running.';
-      });
+      if (!silent && mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage =
+              'Could not load targets.\nMake sure the backend is running.';
+        });
+      }
     }
   }
 
@@ -57,6 +90,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   // Opens AddTargetScreen. Reloads list if a scan was saved.
   //----------------------------------------------------------
   Future<void> _goToAddTarget() async {
+
     final result = await Navigator.push<bool>(
       context,
       MaterialPageRoute(builder: (_) => const AddTargetScreen()),
@@ -124,7 +158,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: ListView.builder(
         padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: _targets.length,
-        itemBuilder: (context, index) => TargetCard(target: _targets[index]),
+        itemBuilder: (context, index) => TargetCard(
+          target: _targets[index],
+          onRefresh: _loadTargets,
+        ),
       ),
     );
   }
@@ -135,14 +172,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
       appBar: AppBar(
         title: const Text('ReconMapper'),
         actions: [
+          if (!_isLoading && _errorMessage == null && _targets.isNotEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: Text(
+                  'Auto-scan in ${_secondsRemaining}s',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
           // Manual refresh button in the top-right
           IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Refresh',
-            onPressed: _isLoading ? null : _loadTargets,
+            onPressed: _isLoading ? null : () => _loadTargets(),
           ),
         ],
       ),
+
       body: _buildBody(),
       floatingActionButton: FloatingActionButton(
         onPressed: _goToAddTarget,
