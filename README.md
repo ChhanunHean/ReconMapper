@@ -135,6 +135,58 @@ flutter run
 
 ---
 
+### 4. Production Hosting and Cloudflare Deployment
+
+To deploy the application to a public domain (chhanun.site) and link it to the local backend using a secure tunnel, follow these setup steps:
+
+#### Frontend Web Deployment (Cloudflare Pages)
+1. **Compile Web Assets:**
+   In the `recon_mapper` directory, build the release web package:
+   ```bash
+   flutter build web --release
+   ```
+2. **Deploy Folder:**
+   * Go to **Cloudflare Dashboard** -> **Workers & Pages** -> **Create Application** -> **Pages** tab -> **Upload your static files** (Direct Upload).
+   * Project name: `reconmapper`.
+   * Drag and drop the `build/web` folder from your Mac.
+   * Click **Deploy**.
+3. **Link Custom Domain:**
+   * Under the deployed project, select the **Custom Domains** tab.
+   * Add `chhanun.site` as your custom domain. *(Ensure you delete any conflicting root A records in your Cloudflare DNS table first).*
+
+#### Backend API Tunneling (Cloudflare Tunnel)
+1. **Authenticate Cloudflared CLI:**
+   Run the login command and authorize `chhanun.site` in your browser:
+   ```bash
+   cloudflared tunnel login
+   ```
+2. **Create the Tunnel:**
+   Create a named tunnel:
+   ```bash
+   cloudflared tunnel create reconmapper
+   ```
+3. **Route Subdomain to Tunnel:**
+   Bind a subdomain (e.g., `api.chhanun.site`) to the tunnel:
+   ```bash
+   cloudflared tunnel route dns reconmapper api.chhanun.site
+   ```
+4. **Run the Tunnel:**
+   Forward traffic from the public subdomain directly to your local FastAPI backend (running on port 8000):
+   ```bash
+   cloudflared tunnel run --url http://localhost:8000 reconmapper
+   ```
+
+#### Code Configuration
+In `lib/services/api_service.dart`, set the `useTunnel` boolean flag to `true` to route API requests to your secure custom domain:
+```dart
+class ApiService {
+  static const bool useTunnel = true; // Set to true to use Cloudflare Tunnel
+  ...
+}
+```
+
+---
+
 ## Project Structure
 
 ```
