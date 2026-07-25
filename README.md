@@ -135,17 +135,23 @@ flutter run
 
 ---
 
-### 4. Production Hosting and Cloudflare Deployment
+### 4. Mobile Distribution and Cross-Platform Web Demo
 
-To deploy the application to a public domain (chhanun.site) and link it to the local backend using a secure tunnel, follow these setup steps:
+The primary deliverable of this project is the native Android application. To build the final installation package (APK) for mobile devices, navigate to the `recon_mapper` folder and run:
+```bash
+flutter build apk --release
+```
+The output installer will be generated at `build/app/outputs/flutter-apk/app-release.apk`.
 
-#### Frontend Web Deployment (Cloudflare Pages)
+To demonstrate the cross-platform capabilities of the Flutter codebase and provide an instant, interactive browser preview of the mobile user interface for grading convenience, you can deploy a web demo of the application to a public domain:
+
+#### Cross-Platform Web Demo Deployment (Cloudflare Pages)
 1. **Compile Web Assets:**
    In the `recon_mapper` directory, build the release web package:
    ```bash
    flutter build web --release
    ```
-2. **Deploy Folder:**
+2. **Deploy Web Folder:**
    * Go to **Cloudflare Dashboard** -> **Workers & Pages** -> **Create Application** -> **Pages** tab -> **Upload your static files** (Direct Upload).
    * Project name: `reconmapper`.
    * Drag and drop the `build/web` folder from your Mac.
@@ -153,6 +159,7 @@ To deploy the application to a public domain (chhanun.site) and link it to the l
 3. **Link Custom Domain:**
    * Under the deployed project, select the **Custom Domains** tab.
    * Add `chhanun.site` as your custom domain. *(Ensure you delete any conflicting root A records in your Cloudflare DNS table first).*
+
 
 #### Backend API Tunneling (Cloudflare Tunnel)
 1. **Authenticate Cloudflared CLI:**
