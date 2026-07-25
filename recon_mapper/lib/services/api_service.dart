@@ -12,11 +12,17 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io' show Platform;
 
 class ApiService {
+  // Set to true to use your Cloudflare Tunnel, or false for standard local development
+  static const bool useTunnel = true;
+
   //-------------------------------------------------------------------------------------
   // iOS Simulator / Mac testing: 127.0.0.1 works fine.
   // Android emulator: use 10.0.2.2 instead.
   //-------------------------------------------------------------------------------------
   static String get baseUrl {
+    if (useTunnel) {
+      return "https://api.chhanun.site";
+    }
     if (kIsWeb) {
       return "http://127.0.0.1:8000"; 
     } else if (Platform.isAndroid) {
