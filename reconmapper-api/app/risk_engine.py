@@ -1,4 +1,7 @@
-RISKY_PORTS = {21, 23, 3306, 3389, 8080}  # FTP, Telnet, MySQL, RDP, HTTP-alt — commonly exploited if exposed
+RISKY_PORTS = {
+    21, 23, 135, 137, 139, 389, 445, 636, 1433, 1521, 3306, 3389, 
+    4444, 5432, 5900, 5985, 5986, 6379, 27017, 27018, 8080
+}  # Commonly exploited database, administrative, and network ports if publicly exposed
 
 
 def calculate_risk(scan_result: dict) -> dict:

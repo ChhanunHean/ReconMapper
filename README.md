@@ -200,20 +200,21 @@ class ApiService {
 ReconMapper/
 ├── recon_mapper/               # Flutter mobile application
 │   ├── lib/
-│   │   ├── models/             # Dart models (target.dart, scan_result.dart)
+│   │   ├── models/             # Dart models (scan_result.dart)
 │   │   ├── screens/            # UI Screens (dashboard, add_target, target_detail)
 │   │   ├── services/           # HTTP API client (api_service.dart)
-│   │   ├── theme/              # Red/Black color styling
-│   │   ├── widgets/            # Custom reusable widgets (target_card, risk_badge)
+│   │   ├── theme/              # Red/Black color styling (app_theme.dart)
+│   │   ├── widgets/            # Custom reusable widgets (target_card, risk_badge, loading_spinner)
 │   │   └── main.dart           # App entry point
 │   └── pubspec.yaml
 │
 └── reconmapper-api/            # FastAPI Python backend
     ├── app/
-    │   ├── routers/            # API endpoints (scan.py, targets.py)
-    │   ├── scanners/           # Scanner modules (dns, ping, ports, ssl, headers, location)
+    │   ├── routers/            # API endpoints (scan.py)
+    │   ├── scanners/           # Scanner modules (dns_lookup.py, ping.py, port_scan.py, ssl_check.py, header_analysis.py, location.py)
     │   ├── database.py         # SQLAlchemy configuration
     │   ├── models.py           # SQLite database schemas
+    │   ├── schemas.py          # Pydantic validation schemas
     │   ├── risk_engine.py      # Numerical risk calculation algorithms
     │   ├── scheduler.py        # Background periodic auto-scanner loop
     │   └── main.py             # FastAPI entry point & startup handlers

@@ -7,6 +7,10 @@ SECURITY_HEADERS = [
     "X-Frame-Options",
     "X-Content-Type-Options",
     "Referrer-Policy",
+    "Permissions-Policy",
+    "X-XSS-Protection",
+    "Cross-Origin-Opener-Policy",
+    "Cross-Origin-Resource-Policy",
 ]
 
 
